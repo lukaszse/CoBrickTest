@@ -1,29 +1,24 @@
 package pl.com.seremak;
 
-import com.mongodb.client.FindIterable;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import io.micronaut.data.model.Page;
-import io.micronaut.data.model.Pageable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
-
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-@Controller
+@Controller("/users")
 public class UserController {
 
     private final MongoClient client;
@@ -44,48 +39,24 @@ public class UserController {
     }
 
 
-
     /**
-     *  Get method, returns all user as as a json.
-     *  This is version without pagination.
+     *  Get Method returns all users as a json.
+     *  Pagination and sorting implemented
      */
-    @Get("/xxx/{?sort}")
+
+    @Get("/{?sort}{?size}{?page}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<User> findUsers(Optional<String> sort) {
-            final FindIterable<User> iterable = getCollection().find();
-            List<User> users = StreamSupport
-                    .stream(getCollection().find().spliterator(), false)
-                    .map(this::hidePassword)
-                    .sorted((u1, u2) -> {
-                        if(sort.orElse("asc").equals("desc")){
-                            logger.info("Sorting descending");
-                            return u2.getUsername().compareTo(u1.getUsername());
-                        } else {
-                            logger.info("Sorting ascending");
-                            return u1.getUsername().compareTo(u2.getUsername());
-                        }
-                    })
-                    .collect(Collectors.toList());
-            return users;
-    }
-
-
-    /**
-     *  Get method, returns all user as as a json.
-     *  With pagination and sorting.
-     */
-    @Get("/paginated")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Page<User> paginatedUsers (Pageable pageable) {
-
-        final FindIterable<User> iterable = getCollection().find();
-
+    public Iterable<User> find(Optional<String> sort, Optional<Integer> size, Optional<Integer> page) {
+        logger.info("MongoClient is null: " + (client == null));
         List<User> users = StreamSupport
-                .stream(getCollection().find().spliterator(), false)
+                .stream(getCollection()
+                        .find()
+                        .sort(basicDBObject(sort.orElse("asc").toLowerCase()))
+                        .limit(size.orElse(20))
+                        .spliterator(), false)
                 .map(this::hidePassword)
                 .collect(Collectors.toList());
-        logger.info("pageable {}", pageable);
-        return Page.of(users, pageable, 3);
+        return users;
     }
 
 
@@ -93,35 +64,34 @@ public class UserController {
      *  Get Method returns one selected user as a json.
      *  Parameter is taking from path variable
      */
-    @Get("users/{username}")
+
+    @Get("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
     public User user(@PathVariable @NotNull String username) {
-
-        // getting user from collection by username
         User user = getCollection()
                         .find(Filters.eq("username", username))
                         .first();
-
-        // TODO - to simplify, eliminate duplicated code
-        // Password hiding. Replacing all character in password with *.
         return hidePassword(user);
     }
 
 
-    @Post
+    /**
+     *  Post method allow to add and save into MongoDB new user
+     *  Acceptable parameter format is json body. Validation implemented.
+     */
+    @Post(MediaType.APPLICATION_JSON)
     public HttpResponse<User> save(@Body @Valid User user) {
         getCollection().insertOne(user);
         return HttpResponse.created(user);
     }
 
-    @Delete("/{name}")
+    @Delete("/delete/{name}")
 
     public HttpResponse delete(String name) {
         Bson filter = Filters.eq("name", name);
         getCollection().deleteOne(filter);
         return HttpResponse.noContent();
     }
-
 
 
     /**
@@ -140,6 +110,17 @@ public class UserController {
     private User hidePassword(User user) {
         user.setPassword(user.getPassword().replaceAll(".", "*"));
         return user;
+    }
+
+    /**
+     *  This method return return BasicDBObjects. Is use to select sorting type: ascending or descending
+     */
+    private BasicDBObject basicDBObject(String sort) {
+        if(sort.equals("desc")) {
+            return new BasicDBObject("username", -1);
+        } else {
+            return new BasicDBObject("username", 1);
+        }
     }
 
 }

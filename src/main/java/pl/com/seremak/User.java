@@ -1,14 +1,16 @@
 package pl.com.seremak;
 
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.data.annotation.GeneratedValue;
+import io.micronaut.data.annotation.Id;
 import io.micronaut.http.annotation.QueryValue;
+import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.NotNull;
 
 @Introspected
-public class User {
+public class User implements Comparable<User> {
 
     @NotBlank
     @QueryValue
@@ -17,8 +19,8 @@ public class User {
     @NotBlank
     private String password;
 
-    @PositiveOrZero
     private Integer age;
+
 
 
     public String getUsername() {
@@ -43,5 +45,15 @@ public class User {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    @Override
+    public int compareTo(User u) {
+        return this.getUsername().compareTo(u.getUsername());
+    }
+
+    @Override
+    public int hashCode() {
+        return getUsername().hashCode();
     }
 }

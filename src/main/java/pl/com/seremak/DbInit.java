@@ -1,19 +1,11 @@
 package pl.com.seremak;
 
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import io.micronaut.context.annotation.Bean;
-import io.micronaut.context.annotation.Configuration;
-import io.micronaut.context.annotation.Context;
-import io.micronaut.context.annotation.Factory;
 import io.micronaut.http.annotation.Controller;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 
 @Controller
@@ -42,6 +34,7 @@ public class DbInit {
         insertUser("Kasia", "123435", 24);
         insertUser("Franek", "qwerty", 33);
     }
+
 
 
     void insertUser(String username, String password, Integer age) {
