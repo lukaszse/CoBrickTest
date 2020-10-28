@@ -1,18 +1,23 @@
 package pl.com.seremak;
 
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.http.annotation.QueryValue;
+
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 @Introspected
 public class User {
 
     @NotBlank
+    @QueryValue
     private String username;
 
     @NotBlank
     private String password;
 
-    @NotBlank
+    @PositiveOrZero
     private Integer age;
 
 

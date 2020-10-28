@@ -38,9 +38,9 @@ public class DbInit {
     }
 
     private void insertData() {
+        insertUser("Zenek", "abc", 23);
         insertUser("Kasia", "123435", 24);
         insertUser("Franek", "qwerty", 33);
-        insertUser("Zenek", "abc", 23);
     }
 
 
