@@ -53,7 +53,7 @@ public class UserController {
                         .find()
                         .sort(setSortType(sort.orElse("asc").toLowerCase()))
                         .limit(size.orElse(20))
-                        .skip((size.orElse(1)) * page.orElse(1)) // TODO - to be fixed
+                        .skip((size.orElse(1)) * page.orElse(1)) // TODO - to be fixed -
                         .spliterator(), false)
                 .map(this::hidePassword)
                 .collect(Collectors.toList());
