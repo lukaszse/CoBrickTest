@@ -1,4 +1,4 @@
-# README.md will be completed tomorrow!
+# README.md will be completed until Friday.
 
 ## Feature http-client documentation
 
