@@ -46,12 +46,12 @@ public class UserController {
 
     @Get("/{?sort}{?size}{?page}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Iterable<User> find(Optional<String> sort, Optional<Integer> size, Optional<Integer> page) {
+    public Iterable<User> findAll(Optional<String> sort, Optional<Integer> size, Optional<Integer> page) {
         logger.info("MongoClient is null: " + (client == null));
         List<User> users = StreamSupport
                 .stream(getCollection()
                         .find()
-                        .sort(basicDBObject(sort.orElse("asc").toLowerCase()))
+                        .sort(setSortType(sort.orElse("asc").toLowerCase()))
                         .limit(size.orElse(20))
                         .spliterator(), false)
                 .map(this::hidePassword)
@@ -67,7 +67,7 @@ public class UserController {
 
     @Get("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    public User user(@PathVariable @NotNull String username) {
+    public User findUser(@PathVariable @NotNull String username) {
         User user = getCollection()
                         .find(Filters.eq("username", username))
                         .first();
@@ -85,10 +85,9 @@ public class UserController {
         return HttpResponse.created(user);
     }
 
-    @Delete("/delete/{name}")
-
-    public HttpResponse delete(String name) {
-        Bson filter = Filters.eq("name", name);
+    @Delete("/delete/{username}")
+    public HttpResponse delete(String username) {
+        Bson filter = Filters.eq("username", username);
         getCollection().deleteOne(filter);
         return HttpResponse.noContent();
     }
@@ -105,21 +104,23 @@ public class UserController {
 
 
     /**
-     *  This method return User object with hidden password.
+     *  This method returns User object with hidden password.
      */
-    private User hidePassword(User user) {
+    User hidePassword(final User user) {
         user.setPassword(user.getPassword().replaceAll(".", "*"));
         return user;
     }
 
     /**
-     *  This method return return BasicDBObjects. Is use to select sorting type: ascending or descending
+     *  This method returns BasicDBObjects. Is use to select sorting type: ascending or descending
      */
-    private BasicDBObject basicDBObject(String sort) {
+    BasicDBObject setSortType(String sort) {
         if(sort.equals("desc")) {
             return new BasicDBObject("username", -1);
-        } else {
+        } else if(sort.equals("asc")) {
             return new BasicDBObject("username", 1);
+        } else {
+            throw new IllegalArgumentException("Wrong parameter passed to method setSortType()");
         }
     }
 
