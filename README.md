@@ -1,4 +1,4 @@
-# Readmi will be completed tommorow!
+# ReadMe will be completed tommorow!
 
 ## Feature http-client documentation
 
