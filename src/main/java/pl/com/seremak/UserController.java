@@ -81,7 +81,7 @@ public class UserController {
      *  Acceptable parameter format is json body. Validation implemented.
      */
     @Post
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public HttpResponse<User> save(@Body @Valid User user) {
         getCollection().insertOne(user);
         return HttpResponse.created(user);
