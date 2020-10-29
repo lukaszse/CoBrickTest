@@ -25,7 +25,7 @@ public class DbInit {
         if(database.getCollection("users").countDocuments() == 0) {
             logger.info("creating new colection");
             database.createCollection("users");
-            insertData(); // TODO - this is just for tests
+            insertData(); // TODO - this for development purpose - is to be removed
         }
     }
 

@@ -79,13 +79,14 @@ public class UserController {
      *  Post method allow to add and save into MongoDB new user
      *  Acceptable parameter format is json body. Validation implemented.
      */
-    @Post(MediaType.APPLICATION_JSON)
+    @Post
+    @Consumes(MediaType.APPLICATION_JSON)
     public HttpResponse<User> save(@Body @Valid User user) {
         getCollection().insertOne(user);
         return HttpResponse.created(user);
     }
 
-    @Delete("/delete/{username}")
+    @Delete("/{username}")
     public HttpResponse delete(String username) {
         Bson filter = Filters.eq("username", username);
         getCollection().deleteOne(filter);
